@@ -1,15 +1,264 @@
-// This is your Prisma schema file,
-// learn more about it in the docs: https://pris.ly/d/prisma-schema
-
-// Looking for ways to speed up your queries, or scale easily with your serverless or edge functions?
-// Try Prisma Accelerate: https://pris.ly/cli/accelerate-init
-
 generator client {
-  provider = "prisma-client"
-  output   = "../src/generated/prisma"
+  provider = "prisma-client-js"
 }
 
 datasource db {
   provider = "postgresql"
   url      = env("DATABASE_URL")
+}
+
+model User {
+  id                String   @id @default(uuid())
+  email             String   @unique
+  passwordHash      String
+  displayName       String
+  bio               String?
+  avatarUrl         String?
+  favouriteGenres   String[] @default([])
+  moodTags          String[] @default([])
+  profileVisibility String   @default("public") // public | friends | private
+  whoCanCall        String   @default("everyone") // everyone | following | nobody
+  status            String   @default("active") // active | deactivated
+  createdAt         DateTime @default(now())
+
+  watchlist              WatchlistEntry[]
+  reviews                Review[]
+  reviewLikes            ReviewLike[]
+  comments               Comment[]
+  followers              Follow[]                  @relation("following")
+  following              Follow[]                  @relation("follower")
+  ownedCommunities       Community[]
+  communityMemberships   CommunityMember[]
+  discussionPosts        DiscussionPost[]
+  conversationMembers    ConversationParticipant[]
+  messagesSent           Message[]
+  callsStarted           CallSession[]
+  callParticipations     CallParticipant[]
+  notificationSettings   NotificationSetting[]
+  recommendationFeedback RecommendationFeedback[]
+}
+
+model Title {
+  id          String   @id @default(uuid())
+  tmdbId      Int      @unique
+  type        String   // movie | tv
+  name        String
+  synopsis    String?
+  releaseYear Int?
+  runtime     Int?
+  posterUrl   String?
+  trailerKey  String?
+  tmdbRating  Float?
+  updatedAt   DateTime @updatedAt
+
+  genres                 TitleGenre[]
+  watchlistEntries       WatchlistEntry[]
+  reviews                Review[]
+  sharedInMessages       Message[]
+  recommendationFeedback RecommendationFeedback[]
+}
+
+model Genre {
+  id     Int          @id // Matches TMDB genre ID
+  name   String
+  titles TitleGenre[]
+}
+
+model TitleGenre {
+  titleId String
+  genreId Int
+  title   Title  @relation(fields: [titleId], references: [id], onDelete: Cascade)
+  genre   Genre  @relation(fields: [genreId], references: [id], onDelete: Cascade)
+
+  @@id([titleId, genreId])
+}
+
+model WatchlistEntry {
+  id      String   @id @default(uuid())
+  userId  String
+  titleId String
+  status  String   @default("want_to_watch") // want_to_watch | seen
+  addedAt DateTime @default(now())
+
+  user  User  @relation(fields: [userId], references: [id], onDelete: Cascade)
+  title Title @relation(fields: [titleId], references: [id], onDelete: Cascade)
+
+  @@unique([userId, titleId])
+}
+
+model Review {
+  id        String   @id @default(uuid())
+  userId    String
+  titleId   String
+  rating    Int      // 1 to 5
+  body      String
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  user     User         @relation(fields: [userId], references: [id], onDelete: Cascade)
+  title    Title        @relation(fields: [titleId], references: [id], onDelete: Cascade)
+  likes    ReviewLike[]
+  comments Comment[]
+
+  @@unique([userId, titleId])
+}
+
+model ReviewLike {
+  userId    String
+  reviewId  String
+  createdAt DateTime @default(now())
+
+  user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
+  review Review @relation(fields: [reviewId], references: [id], onDelete: Cascade)
+
+  @@id([userId, reviewId])
+}
+
+model Comment {
+  id              String   @id @default(uuid())
+  reviewId        String
+  userId          String
+  parentCommentId String?
+  body            String
+  createdAt       DateTime @default(now())
+
+  review  Review    @relation(fields: [reviewId], references: [id], onDelete: Cascade)
+  user    User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  parent  Comment?  @relation("CommentReplies", fields: [parentCommentId], references: [id], onDelete: Cascade)
+  replies Comment[] @relation("CommentReplies")
+}
+
+model Follow {
+  followerId  String
+  followingId String
+  createdAt   DateTime @default(now())
+
+  follower  User @relation("follower", fields: [followerId], references: [id], onDelete: Cascade)
+  following User @relation("following", fields: [followingId], references: [id], onDelete: Cascade)
+
+  @@id([followerId, followingId])
+}
+
+model Community {
+  id          String   @id @default(uuid())
+  ownerId     String
+  name        String   @unique
+  description String?
+  createdAt   DateTime @default(now())
+
+  owner   User              @relation(fields: [ownerId], references: [id], onDelete: Cascade)
+  members CommunityMember[]
+  posts   DiscussionPost[]
+}
+
+model CommunityMember {
+  communityId String
+  userId      String
+  role        String   @default("member") // owner | moderator | member
+  joinedAt    DateTime @default(now())
+
+  community Community @relation(fields: [communityId], references: [id], onDelete: Cascade)
+  user      User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@id([communityId, userId])
+}
+
+model DiscussionPost {
+  id          String   @id @default(uuid())
+  communityId String
+  authorId    String
+  title       String
+  body        String
+  createdAt   DateTime @default(now())
+
+  community Community @relation(fields: [communityId], references: [id], onDelete: Cascade)
+  author    User      @relation(fields: [authorId], references: [id], onDelete: Cascade)
+}
+
+model Conversation {
+  id        String   @id @default(uuid())
+  type      String   @default("direct") // direct | group
+  name      String?
+  createdAt DateTime @default(now())
+
+  participants ConversationParticipant[]
+  messages     Message[]
+  callSessions CallSession[]
+}
+
+model ConversationParticipant {
+  conversationId String
+  userId         String
+  joinedAt       DateTime @default(now())
+
+  conversation Conversation @relation(fields: [conversationId], references: [id], onDelete: Cascade)
+  user         User         @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@id([conversationId, userId])
+}
+
+model Message {
+  id             String    @id @default(uuid())
+  conversationId String
+  senderId       String
+  body           String
+  sharedTitleId  String?
+  sentAt         DateTime  @default(now())
+  editedAt       DateTime?
+
+  conversation Conversation @relation(fields: [conversationId], references: [id], onDelete: Cascade)
+  sender       User         @relation(fields: [senderId], references: [id], onDelete: Cascade)
+  sharedTitle  Title?       @relation(fields: [sharedTitleId], references: [id], onDelete: SetNull)
+}
+
+model CallSession {
+  id             String    @id @default(uuid())
+  conversationId String
+  startedBy      String
+  type           String    @default("video") // voice | video | screen
+  status         String    @default("ringing") // ringing | connected | ended | missed
+  startedAt      DateTime  @default(now())
+  endedAt        DateTime?
+
+  conversation Conversation      @relation(fields: [conversationId], references: [id], onDelete: Cascade)
+  starter      User              @relation(fields: [startedBy], references: [id], onDelete: Cascade)
+  participants CallParticipant[]
+}
+
+model CallParticipant {
+  callId   String
+  userId   String
+  joinedAt DateTime  @default(now())
+  leftAt   DateTime?
+  isMuted  Boolean   @default(false)
+
+  call CallSession @relation(fields: [callId], references: [id], onDelete: Cascade)
+  user User        @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@id([callId, userId])
+}
+
+model NotificationSetting {
+  id        String  @id @default(uuid())
+  userId    String
+  eventType String  // new_follower | review_comment | incoming_call | community_post
+  channel   String  @default("in_app") // in_app | email
+  isEnabled Boolean @default(true)
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([userId, eventType, channel])
+}
+
+model RecommendationFeedback {
+  id        String   @id @default(uuid())
+  userId    String
+  titleId   String
+  action    String   // dismiss | upvote
+  createdAt DateTime @default(now())
+
+  user  User  @relation(fields: [userId], references: [id], onDelete: Cascade)
+  title Title @relation(fields: [titleId], references: [id], onDelete: Cascade)
+
+  @@unique([userId, titleId])
 }
