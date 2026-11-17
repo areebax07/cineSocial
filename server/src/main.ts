@@ -1,16 +1,23 @@
 import { NestFactory } from '@nestjs/core';
 import { ValidationPipe } from '@nestjs/common';
+import { NestExpressApplication } from '@nestjs/platform-express';
 import { DocumentBuilder, SwaggerModule } from '@nestjs/swagger';
+import { join } from 'path';
 import { AppModule } from './app.module.js';
 
 async function bootstrap() {
-  const app = await NestFactory.create(AppModule);
+  const app = await NestFactory.create<NestExpressApplication>(AppModule);
 
   // Prefix all routes with /api (matches Deliverable 2 endpoints like /api/auth/login)
   app.setGlobalPrefix('api');
 
   // Enable CORS so React frontend can connect later
   app.enableCors();
+
+  // Serve uploaded avatar images publicly at /uploads/...
+  app.useStaticAssets(join(process.cwd(), 'uploads'), {
+    prefix: '/uploads/',
+  });
 
   // Automatically validate incoming request payloads
   app.useGlobalPipes(
