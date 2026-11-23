@@ -13,6 +13,7 @@ import { AuthModule } from './auth/auth.module.js';
 import { UsersModule } from './users/users.module.js';
 import { TitlesModule } from './titles/titles.module.js';
 import { WatchlistModule } from './watchlist/watchlist.module.js';
+import { RecommendationsModule } from './recommendations/recommendations.module.js';
 export const { ObserveModule, ObserveInstrument } = createObserveModule();
 let AppModule = class AppModule {
 };
@@ -29,6 +30,7 @@ AppModule = __decorate([
             UsersModule,
             TitlesModule,
             WatchlistModule,
+            RecommendationsModule,
         ],
         controllers: [AppController],
         providers: [AppService],
