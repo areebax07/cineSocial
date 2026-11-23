@@ -11,8 +11,9 @@ let TitlesModule = class TitlesModule {
 };
 TitlesModule = __decorate([
     Module({
+        controllers: [TitlesController],
         providers: [TitlesService],
-        controllers: [TitlesController]
+        exports: [TitlesService],
     })
 ], TitlesModule);
 export { TitlesModule };

@@ -12,6 +12,7 @@ import { PrismaModule } from './prisma/prisma.module.js';
 import { AuthModule } from './auth/auth.module.js';
 import { UsersModule } from './users/users.module.js';
 import { TitlesModule } from './titles/titles.module.js';
+import { WatchlistModule } from './watchlist/watchlist.module.js';
 export const { ObserveModule, ObserveInstrument } = createObserveModule();
 let AppModule = class AppModule {
 };
@@ -27,6 +28,7 @@ AppModule = __decorate([
             AuthModule,
             UsersModule,
             TitlesModule,
+            WatchlistModule,
         ],
         controllers: [AppController],
         providers: [AppService],

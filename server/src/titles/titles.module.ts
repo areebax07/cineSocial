@@ -3,7 +3,8 @@ import { TitlesService } from './titles.service.js';
 import { TitlesController } from './titles.controller.js';
 
 @Module({
+  controllers: [TitlesController],
   providers: [TitlesService],
-  controllers: [TitlesController]
+  exports: [TitlesService],
 })
 export class TitlesModule {}
