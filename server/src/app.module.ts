@@ -8,6 +8,7 @@ import { UsersModule } from './users/users.module.js';
 import { TitlesModule } from './titles/titles.module.js';
 import { WatchlistModule } from './watchlist/watchlist.module.js';
 import { RecommendationsModule } from './recommendations/recommendations.module.js';
+import { ReviewsModule } from './reviews/reviews.module.js';
 
 export const { ObserveModule, ObserveInstrument } = createObserveModule();
 
@@ -26,6 +27,7 @@ export const { ObserveModule, ObserveInstrument } = createObserveModule();
     TitlesModule,
     WatchlistModule,
     RecommendationsModule,
+    ReviewsModule,
   ],
   controllers: [AppController],
   providers: [AppService],
