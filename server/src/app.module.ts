@@ -11,6 +11,7 @@ import { RecommendationsModule } from './recommendations/recommendations.module.
 import { ReviewsModule } from './reviews/reviews.module.js';
 import { CommentsModule } from './comments/comments.module.js';
 import { SocialModule } from './social/social.module.js';
+import { CommunitiesModule } from './communities/communities.module.js';
 
 export const { ObserveModule, ObserveInstrument } = createObserveModule();
 
@@ -32,6 +33,7 @@ export const { ObserveModule, ObserveInstrument } = createObserveModule();
     ReviewsModule,
     CommentsModule,
     SocialModule,
+    CommunitiesModule,
   ],
   controllers: [AppController],
   providers: [AppService],
