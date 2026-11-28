@@ -12,6 +12,7 @@ import { ReviewsModule } from './reviews/reviews.module.js';
 import { CommentsModule } from './comments/comments.module.js';
 import { SocialModule } from './social/social.module.js';
 import { CommunitiesModule } from './communities/communities.module.js';
+import { ChatModule } from './chat/chat.module.js';
 
 export const { ObserveModule, ObserveInstrument } = createObserveModule();
 
@@ -34,6 +35,7 @@ export const { ObserveModule, ObserveInstrument } = createObserveModule();
     CommentsModule,
     SocialModule,
     CommunitiesModule,
+    ChatModule,
   ],
   controllers: [AppController],
   providers: [AppService],
